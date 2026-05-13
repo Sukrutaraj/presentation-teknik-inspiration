@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Verksamhetsutveckling genom teknik</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;1,300&family=DM+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --dark:#0a0c0f;
+  --mid:#141820;
+  --card:#1c2230;
+  --green:#00e5a0;
+  --blue:#4da6ff;
+  --coral:#ff6b5b;
+  --gold:#ffd166;
+  --text:#e8eaf2;
+  --muted:rgba(232,234,242,0.45);
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"DM Sans",sans-serif;
+}
+html,body{width:100%;height:100%;background:var(--dark);color:var(--text);font-family:var(--sans);overflow:hidden;}
+
+/* ── DECK ── */
+#deck{position:fixed;inset:0;}
+.slide{
+  position:absolute;inset:0;
+  display:flex;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.5s ease,transform 0.5s ease;
+  transform:translateX(50px);
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0);}
+.slide.prev{opacity:0;transform:translateX(-50px);}
+
+/* ── NAV ── */
+#nav{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  z-index:999;
+  display:flex;align-items:center;gap:12px;
+  background:rgba(10,12,15,0.92);
+  backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:50px;
+  padding:10px 18px;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,0.2);cursor:pointer;transition:all 0.25s;}
+.dot.on{background:var(--green);box-shadow:0 0 8px var(--green);transform:scale(1.3);}
+.arr{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.15);
+  background:transparent;color:var(--text);
+  font-size:16px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.15s,transform 0.1s;
+  font-family:var(--sans);
+}
+.arr:hover{background:rgba(255,255,255,0.12);}
+.arr:active{transform:scale(0.9);}
+#ctr{font-size:12px;color:var(--muted);min-width:32px;text-align:center;}
+
+/* ── SHARED ── */
+.eyebrow{font-size:clamp(10px,1.1vw,13px);letter-spacing:.13em;text-transform:uppercase;font-weight:600;}
+.big-title{font-family:var(--serif);font-size:clamp(26px,4vw,54px);font-weight:700;line-height:1.08;letter-spacing:-.02em;color:#fff;}
+.big-title em{font-style:italic;font-weight:300;}
+.body-text{font-size:clamp(13px,1.3vw,16px);color:var(--muted);line-height:1.7;max-width:480px;}
+.pill{padding:7px 14px;border-radius:50px;font-size:clamp(10px,1vw,13px);font-weight:600;}
+.chip{padding:8px 16px;border-radius:50px;font-size:clamp(11px,1.1vw,14px);font-weight:600;}
+.chips{display:flex;gap:10px;flex-wrap:wrap;}
+.formula{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.point{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--card);border-radius:10px;font-size:clamp(12px,1.2vw,15px);border-left:3px solid transparent;}
+
+/* ── S1 COVER ── */
+.s1{background:var(--dark);overflow:hidden;}
+.s1 .img-half{position:absolute;right:0;top:0;bottom:0;width:52%;display:flex;align-items:center;justify-content:center;padding:20px;}
+.s1 .img-half img{width:100%;height:100%;object-fit:contain;object-position:top center;opacity:.9;}
+.s1 .img-half::before{content:"";position:absolute;inset:0;background:linear-gradient(to right,var(--dark) 0%,transparent 30%);z-index:1;}
+.s1 .left{position:relative;z-index:2;width:55%;padding:0 0 0 7vw;display:flex;flex-direction:column;justify-content:center;gap:20px;}
+
+/* ── S2 SPLIT ── */
+.s2{background:var(--dark);overflow:hidden;}
+.s2 .left{width:46%;padding:0 4vw 0 7vw;display:flex;flex-direction:column;justify-content:center;gap:16px;position:relative;z-index:2;}
+.s2 .right{width:54%;display:flex;align-items:center;justify-content:center;padding:20px 20px 80px 0;position:relative;}
+.s2 .right img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
+.s2 .right::before{content:"";position:absolute;left:0;top:0;bottom:0;width:80px;background:linear-gradient(to right,var(--dark),transparent);z-index:1;pointer-events:none;}
+
+/* ── S3 THREE CARDS ── */
+.s3{background:var(--mid);flex-direction:column;padding:30px 5vw 76px;gap:16px;}
+.hdr{text-align:center;}
+.cards{display:flex;gap:14px;flex:1;min-height:0;}
+.icard{flex:1;background:var(--card);border-radius:18px;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.05);}
+.icard .cimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;background:#fff;}
+.icard .cimg img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
+.icard .cbody{padding:12px 14px 14px;flex-shrink:0;}
+.icard .ctitle{font-size:clamp(12px,1.2vw,15px);font-weight:600;color:#fff;margin-bottom:3px;}
+.icard .csub{font-size:clamp(10px,1vw,12px);color:var(--muted);}
+
+/* ── S4 & S5 TWO-UP ── */
+.s4,.s5{background:var(--dark);flex-direction:column;padding:18px 4vw 76px;gap:14px;}
+.twoup{display:flex;gap:14px;flex:1;min-height:0;}
+.tpanel{flex:1;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.06);}
+.tpanel .tlabel{padding:11px 16px;font-size:clamp(11px,1.1vw,14px);font-weight:700;flex-shrink:0;}
+.tpanel .timg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:12px;background:#fff;}
+.tpanel .timg img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
+.tpanel .tcap{padding:9px 14px 12px;font-size:clamp(10px,1vw,12px);color:var(--muted);background:var(--card);line-height:1.5;flex-shrink:0;}
+
+/* ── S6 GLÄDJE ── */
+.s6{background:#e8f4f0;overflow:hidden;}
+.s6 .img-side{width:50%;display:flex;align-items:center;justify-content:center;padding:30px 10px 80px 40px;}
+.s6 .img-side img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
+.s6 .cnt{width:50%;padding:0 6vw 80px 2vw;display:flex;flex-direction:column;justify-content:center;gap:20px;}
+
+/* ── S7 STOLTHET ── */
+.s7{background:#fff8f0;overflow:hidden;}
+.s7 .img-side{width:55%;display:flex;align-items:center;justify-content:center;padding:30px 0 80px 30px;}
+.s7 .img-side img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}
+.s7 .cnt{width:45%;padding:0 5vw 80px 2vw;display:flex;flex-direction:column;justify-content:center;gap:18px;}
+.rgrid{display:flex;flex-direction:column;gap:10px;}
+.rrow{display:flex;gap:10px;}
+.rtag{flex:1;padding:10px 12px;border-radius:12px;font-size:clamp(11px,1.1vw,14px);font-weight:700;text-align:center;}
+
+/* ── S8 CLOSING ── */
+.s8{background:var(--dark);overflow:hidden;}
+.s8 .img-side{width:55%;display:flex;align-items:flex-end;justify-content:center;padding:0 0 76px 20px;}
+.s8 .img-side img{max-width:100%;max-height:90%;width:auto;height:auto;object-fit:contain;}
+.s8 .cnt{width:45%;padding:0 5vw 80px 0;display:flex;flex-direction:column;justify-content:center;gap:22px;}
+.link-pill{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 22px;border-radius:50px;
+  font-size:clamp(11px,1.1vw,14px);font-weight:700;
+  text-decoration:none;transition:opacity 0.15s;
+}
+.link-pill:hover{opacity:0.85;}
+
+/* ── HINT ── */
+#hint{position:fixed;top:18px;right:22px;font-size:11px;color:rgba(255,255,255,0.18);display:flex;gap:6px;align-items:center;pointer-events:none;}
+kbd{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:2px 6px;font-size:11px;font-family:var(--sans);}
+</style>
+</head>
+<body>
+
+<div id="deck">
+
+<!-- ══ SLIDE 1: COVER ══ -->
+<div class="slide s1 active">
+  <div class="img-half">
+    <img src="Deepak_Teknik_inspiration.png" alt="">
+  </div>
+  <div class="left">
+    <div class="eyebrow" style="color:var(--green)">Lunds kommun · Daglig verksamhet · 2025–2026</div>
+    <h1 class="big-title">Verksamhets-<br><em>utveckling</em></h1>
+    <p class="body-text">Genom teknik, inspiration och nytänkande – för personal och deltagare.</p>
+    <div class="formula">
+      <span class="pill" style="background:rgba(0,229,160,.12);color:var(--green);border:1px solid rgba(0,229,160,.3)">Teknik</span>
+      <span style="color:var(--muted);font-size:18px">+</span>
+      <span class="pill" style="background:rgba(77,166,255,.12);color:var(--blue);border:1px solid rgba(77,166,255,.3)">Människor</span>
+      <span style="color:var(--muted);font-size:18px">+</span>
+      <span class="pill" style="background:rgba(255,107,91,.12);color:var(--coral);border:1px solid rgba(255,107,91,.3)">Struktur</span>
+      <span style="color:var(--muted);font-size:18px">=</span>
+      <span class="pill" style="background:rgba(255,209,102,.12);color:var(--gold);border:1px solid rgba(255,209,102,.3)">Möjligheter</span>
+    </div>
+    <p style="font-size:clamp(11px,1vw,13px);color:var(--muted)">Diabasen &amp; Nilis · Sukrutaraj Deepak</p>
+  </div>
+</div>
+
+<!-- ══ SLIDE 2: UPPDRAGET ══ -->
+<div class="slide s2">
+  <div class="left">
+    <div class="eyebrow" style="color:var(--blue)">Uppdraget</div>
+    <h2 class="big-title">Hjälpa personal och deltagare in i den <em>digitala världen</em></h2>
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="point" style="border-color:var(--green)">👥&nbsp; Kartlägga kompetens och behov i varje grupp</div>
+      <div class="point" style="border-color:var(--blue)">🔧&nbsp; Bygga skräddarsydda digitala verktyg</div>
+      <div class="point" style="border-color:var(--coral)">📈&nbsp; Kompetensutveckling för personal</div>
+      <div class="point" style="border-color:var(--gold)">🌟&nbsp; Ökad självständighet och delaktighet för deltagare</div>
+    </div>
+  </div>
+  <div class="right">
+    <img src="1__Digitala_hjälpmedel.png" alt="Digitala hjälpmedel">
+  </div>
+</div>
+
+<!-- ══ SLIDE 3: VERKTYG FÖR DELTAGARNA ══ -->
+<div class="slide s3">
+  <div class="hdr">
+    <div class="eyebrow" style="color:var(--green)">För deltagarna</div>
+    <h2 class="big-title" style="font-size:clamp(22px,3vw,42px)">Verktyg som <em>skapar självständighet</em></h2>
+  </div>
+  <div class="cards">
+    <div class="icard">
+      <div class="cimg"><img src="6__Vad_ska_jag_göra.png" alt="Vad ska jag göra"></div>
+      <div class="cbody">
+        <div class="ctitle">Vad ska jag göra?</div>
+        <div class="csub">Video · bildstöd · checklista</div>
+      </div>
+    </div>
+    <div class="icard">
+      <div class="cimg"><img src="7__Morgonval.png" alt="Morgonval"></div>
+      <div class="cbody">
+        <div class="ctitle">Kommunikationsstöd</div>
+        <div class="csub">Morgonval · eget val · röst</div>
+      </div>
+    </div>
+    <div class="icard">
+      <div class="cimg"><img src="16__inte_glömma_saker.png" alt="Inte glömma saker"></div>
+      <div class="cbody">
+        <div class="ctitle">Inte glömma saker</div>
+        <div class="csub">Påminnelser · kalender · timer</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 4: BYGGDA VERKTYG ══ -->
+<div class="slide s4">
+  <div class="hdr">
+    <div class="eyebrow" style="color:var(--coral)">Byggt från grunden</div>
+    <h2 class="big-title" style="font-size:clamp(20px,2.8vw,38px)">Verktyg som <em>delas öppet</em> med alla</h2>
+  </div>
+  <div class="twoup">
+    <div class="tpanel" style="background:var(--card)">
+      <div class="tlabel" style="background:rgba(0,229,160,.1);color:var(--green)">✅ Digital aktivitetschecklista</div>
+      <div class="timg"><img src="9_5__digital_aktivitetschecklistor.png" alt="Checklista"></div>
+      <div class="tcap">Steg-för-steg med röst, bild och text.<br>Personalen skapar – deltagaren gör självständigt.</div>
+    </div>
+    <div class="tpanel" style="background:var(--card)">
+      <div class="tlabel" style="background:rgba(77,166,255,.1);color:var(--blue)">💬 Digital samtalsyta</div>
+      <div class="timg"><img src="12__digital_Samtalsyta_.png" alt="Samtalsyta"></div>
+      <div class="tcap">Ja / Nej / Vet inte · Skala 1–5.<br>Delbar länk skapad på 30 sekunder.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 5: LÄRANDE I PRAKTIKEN ══ -->
+<div class="slide s5">
+  <div class="hdr">
+    <div class="eyebrow" style="color:var(--gold)">Lärande i praktiken</div>
+    <h2 class="big-title" style="font-size:clamp(20px,2.8vw,38px)"><em>Samarbete</em> · Nyfikenhet · Stolthet</h2>
+  </div>
+  <div class="twoup">
+    <div class="tpanel" style="background:var(--card)">
+      <div class="tlabel" style="background:rgba(255,209,102,.1);color:var(--gold)">🃏 Språk-memory</div>
+      <div class="timg"><img src="15__Språk-memory.png" alt="Språk-memory"></div>
+      <div class="tcap">Tvåspråkigt · bild + ord på skärm.<br>Träna ordförståelse på ett roligt sätt.</div>
+    </div>
+    <div class="tpanel" style="background:var(--card)">
+      <div class="tlabel" style="background:rgba(255,107,91,.1);color:var(--coral)">🖨️ 3D-skrivare</div>
+      <div class="timg"><img src="10__Samarbete_3D_Skrivare.png" alt="3D-skrivare"></div>
+      <div class="tcap">Steg-för-steg med tydliga checklistor.<br>Självständighet och delaktighet i fokus.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 6: GLÄDJE DRIVER LÄRANDE ══ -->
+<div class="slide s6">
+  <div class="img-side">
+    <img src="Bild75.png" alt="Lyfta varandra">
+  </div>
+  <div class="cnt">
+    <div class="eyebrow" style="color:#e05a3a">Motivation &amp; gemenskap</div>
+    <h2 class="big-title" style="color:#1a1a2e">Glädje <em>driver</em> lärande</h2>
+    <p class="body-text" style="color:rgba(26,26,46,0.65)">När vi lyfter varandra skapar vi engagemang och motivation – och gör arbetet roligare för alla.</p>
+    <div class="chips">
+      <span class="chip" style="background:rgba(255,107,91,.12);color:#e05a3a;border:1px solid rgba(255,107,91,.3)">Delaktighet</span>
+      <span class="chip" style="background:rgba(77,166,255,.12);color:#2979c4;border:1px solid rgba(77,166,255,.3)">Gemenskap</span>
+      <span class="chip" style="background:rgba(0,180,100,.12);color:#1a7a4a;border:1px solid rgba(0,180,100,.3)">Engagemang</span>
+      <span class="chip" style="background:rgba(255,160,0,.12);color:#b36b00;border:1px solid rgba(255,160,0,.3)">Stolthet</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SLIDE 7: RESULTAT – STOLTHET ══ -->
+<div class="slide s7">
+  <div class="img-side">
+    <img src="Bild_14.PNG" alt="Stolthet">
+  </div>
+  <div class="cnt">
+    <div class="eyebrow" style="color:#e05a3a">Resultat som märks</div>
+    <h2 class="big-title" style="color:#1a1a2e;font-size:clamp(22px,3vw,42px)">Vad <em>förändras</em> på riktigt</h2>
+    <div class="rgrid">
+      <div class="rrow">
+        <div class="rtag" style="background:rgba(255,50,50,.1);color:#c0392b;border:1px solid rgba(255,50,50,.25)">↑ Självständighet</div>
+        <div class="rtag" style="background:rgba(50,100,255,.1);color:#2255cc;border:1px solid rgba(50,100,255,.25)">↑ Delaktighet</div>
+      </div>
+      <div class="rrow">
+        <div class="rtag" style="background:rgba(150,50,200,.1);color:#7b2d9e;border:1px solid rgba(150,50,200,.25)">↑ Livskvalitet</div>
+        <div class="rtag" style="background:rgba(0,150,80,.1);color:#1a6e3c;border:1px solid rgba(0,150,80,.25)">↑ Meningsfullhet</div>
+      </div>
+      <div class="rrow">
+        <div class="rtag" style="background:rgba(0,100,200,.1);color:#0057a8;border:1px solid rgba(0,100,200,.25)">↑ Effektivitet</div>
+        <div class="rtag" style="background:rgba(100,50,200,.1);color:#5a2ea6;border:1px solid rgba(100,50,200,.25)">↑ Trygghet</div>
+      </div>
+    </div>
+    <p style="font-size:clamp(12px,1.1vw,14px);color:rgba(26,26,46,0.5)">Tillsammans skapas förutsättningar för framtiden.</p>
+  </div>
+</div>
+
+<!-- ══ SLIDE 8: CLOSING ══ -->
+<div class="slide s8">
+  <div class="img-side">
+    <img src="Sista_Bild.png" alt="Teknik Inspiration">
+  </div>
+  <div class="cnt">
+    <div class="eyebrow" style="color:var(--green)">Avslutning</div>
+    <h2 class="big-title">Tillsammans<br>skapar vi<br><em>möjligheter.</em></h2>
+    <p class="body-text">Det här är inte ett projekt.<br>Det är ett sätt att tänka.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="font-size:clamp(10px,1vw,12px);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600;">Se det i praktiken</div>
+      <a class="link-pill" href="https://sukrutaraj.github.io/Koka-Kaffe-Grupp-5/" target="_blank"
+        style="background:var(--green);color:#000;">
+        <span style="font-size:18px">☕</span> Exempel: Koka kaffe
+      </a>
+      <a class="link-pill" href="https://sukrutaraj.github.io/checklist-pages/builder.html" target="_blank"
+        style="background:transparent;border:1px solid var(--green);color:var(--green);">
+        <span style="font-size:18px">🛠️</span> Skapa din egen checklista
+      </a>
+    </div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- NAV -->
+<nav id="nav">
+  <button class="arr" id="btn-prev">&#8592;</button>
+  <div id="dots"></div>
+  <span id="ctr">1 / 8</span>
+  <button class="arr" id="btn-next">&#8594;</button>
+</nav>
+
+<div id="hint"><kbd>←</kbd><kbd>→</kbd> navigera</div>
+
+<script>
+(function() {
+  var slides = document.querySelectorAll('.slide');
+  var dotsEl = document.getElementById('dots');
+  var ctrEl  = document.getElementById('ctr');
+  var total  = slides.length;
+  var cur    = 0;
+
+  for (var i = 0; i < total; i++) {
+    var d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' on' : '');
+    d.setAttribute('data-i', String(i));
+    dotsEl.appendChild(d);
+  }
+
+  function goTo(n) {
+    if (n < 0 || n >= total || n === cur) return;
+    var prev = cur;
+    cur = n;
+    slides[prev].classList.remove('active');
+    slides[prev].classList.add('prev');
+    var p = prev;
+    setTimeout(function() { slides[p].classList.remove('prev'); }, 550);
+    slides[cur].classList.remove('prev');
+    slides[cur].classList.add('active');
+    var allDots = dotsEl.querySelectorAll('.dot');
+    for (var i = 0; i < allDots.length; i++) {
+      allDots[i].classList.toggle('on', parseInt(allDots[i].getAttribute('data-i')) === cur);
+    }
+    ctrEl.textContent = (cur + 1) + ' / ' + total;
+  }
+
+  dotsEl.addEventListener('click', function(e) {
+    var d = e.target.closest('.dot');
+    if (d) goTo(parseInt(d.getAttribute('data-i')));
+  });
+
+  document.getElementById('btn-prev').addEventListener('click', function() { goTo(cur - 1); });
+  document.getElementById('btn-next').addEventListener('click', function() { goTo(cur + 1); });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goTo(cur + 1); }
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); goTo(cur - 1); }
+  });
+
+  var tx = 0;
+  document.addEventListener('touchstart', function(e) { tx = e.touches[0].clientX; }, {passive: true});
+  document.addEventListener('touchend', function(e) {
+    var dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 50) goTo(dx < 0 ? cur + 1 : cur - 1);
+  }, {passive: true});
+})();
+</script>
+</body>
+</html>
