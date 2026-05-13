@@ -331,7 +331,7 @@ kbd{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);bo
 
 <div id="hint"><kbd>←</kbd><kbd>→</kbd> navigera</div>
 
-<button id="btn-fs" onclick="toggleFS()" title="Fullskärm" style="
+<button id="btn-fs" title="Fullskärm" style="
   position:fixed;top:18px;left:22px;z-index:999;
   width:36px;height:36px;border-radius:50%;
   border:1px solid rgba(255,255,255,0.15);
@@ -406,6 +406,8 @@ kbd{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);bo
       btn.title = 'Fullskärm';
     }
   });
+
+  document.getElementById('btn-fs').addEventListener('click', toggleFS);
 
   document.addEventListener('keydown', function(e) {
     if (e.key === 'f' || e.key === 'F') toggleFS();
